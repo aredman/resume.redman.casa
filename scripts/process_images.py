@@ -15,7 +15,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageOps
 from PIL.ExifTags import TAGS
 from datetime import datetime
 
@@ -54,7 +54,12 @@ def convert_to_webp(input_path, output_path, quality=85, max_width=2400):
     try:
         img = Image.open(input_path)
         
-        # Get original dimensions
+        # Apply EXIF orientation so portrait photos display correctly
+        # (phone cameras store portrait images as landscape pixels with a
+        # "rotate 90°" EXIF tag — this bakes the rotation into the pixels)
+        img = ImageOps.exif_transpose(img)
+        
+        # Get original dimensions (after orientation fix)
         orig_width, orig_height = img.size
         
         # Resize if needed

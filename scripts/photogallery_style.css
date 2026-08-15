@@ -1,34 +1,53 @@
-/* Photo Gallery Styles - Improved Version */
+/* Photo Gallery Styles - Grid with Portrait Row Spanning */
 
 /* The Grid Layout */
 .gallery-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: 200px;     /* Base row height for landscape photos */
+  grid-auto-flow: dense;     /* Fills gaps efficiently */
   grid-gap: 20px;
   padding: 20px;
 }
 
 /* Individual Photo Styling */
 .photo-item {
-  position: relative;
-  overflow: hidden;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
+  overflow: hidden;
 }
 
 .photo-item:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
   z-index: 10;
   box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 
-.photo-item img {
+/* Landscape photos: 1 row, fills cell completely */
+.photo-landscape {
+  grid-row: span 1;
+}
+
+.photo-landscape img {
   width: 100%;
-  height: 250px; /* Fixed height for uniform grid */
-  object-fit: cover; /* Crops image to fill the box without stretching */
-  cursor: pointer;
+  height: 100%;
+  object-fit: cover;
   display: block;
+  cursor: pointer;
+}
+
+/* Portrait photos: spans 2 rows, fills both completely */
+.photo-portrait {
+  grid-row: span 2;
+}
+
+.photo-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
 }
 
 /* The "Blow Up" (Lightbox) Effect */
@@ -51,14 +70,14 @@
   padding: 20px;
 }
 
-/* Lightbox image container */
+/* Lightbox image container — clicking anywhere closes the lightbox */
 .lightbox > a {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 60px 20px 20px 20px; /* Extra top padding for close button */
+  padding: 20px;
 }
 
 .lightbox img {
@@ -71,52 +90,23 @@
   box-shadow: 0 0 30px rgba(0,0,0,0.5);
 }
 
-/* Close button */
-.close-btn {
-  position: fixed;
-  top: 20px;
-  right: 30px;
-  color: white;
-  font-size: 40px;
-  font-weight: bold;
-  text-decoration: none;
-  z-index: 1000;
-  background: rgba(0,0,0,0.5);
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s ease;
-}
-
-.close-btn:hover {
-  background: rgba(255,255,255,0.2);
-}
-
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .gallery-container {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-auto-rows: 160px;
+  }
+}
+
 @media (max-width: 768px) {
   .gallery-container {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-auto-rows: 120px;
     grid-gap: 10px;
     padding: 10px;
   }
-  
-  .photo-item img {
-    height: 150px;
-  }
-  
   .lightbox img {
     max-width: 98%;
     max-height: 90vh;
-  }
-  
-  .close-btn {
-    font-size: 30px;
-    width: 40px;
-    height: 40px;
-    top: 10px;
-    right: 10px;
   }
 }

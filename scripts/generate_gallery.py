@@ -56,7 +56,7 @@ SECTION_TEMPLATE = """<h1>{section_title}</h1>
 </div>
 """
 
-THUMBNAIL_TEMPLATE = """    <div class="photo-item">
+THUMBNAIL_TEMPLATE = """    <div class="photo-item photo-{orientation}">
         <a href="#img{index}">
             <img src="{image_path}" alt="{alt_text}" loading="lazy">
         </a>
@@ -64,7 +64,6 @@ THUMBNAIL_TEMPLATE = """    <div class="photo-item">
 """
 
 LIGHTBOX_TEMPLATE = """    <div id="img{index}" class="lightbox">
-        <a href="#" class="close-btn">&times;</a>
         <a href="#">
             <img src="{image_path}" alt="{alt_text}">
         </a>
@@ -107,7 +106,7 @@ def generate_breadcrumb_html(breadcrumbs):
     return '\n'.join(html_parts)
 
 
-def generate_gallery_section(photos, base_path, section_title=None):
+def generate_gallery_section(photos, base_path, section_title=None, start_index=1):
     """
     Generate HTML for a gallery section.
     
@@ -115,6 +114,7 @@ def generate_gallery_section(photos, base_path, section_title=None):
         photos: List of photo metadata dicts
         base_path: Base path for image files (relative to HTML file)
         section_title: Optional section title
+        start_index: Starting index for lightbox IDs (to keep IDs unique across sections)
     
     Returns:
         str: HTML for the gallery section
@@ -122,18 +122,23 @@ def generate_gallery_section(photos, base_path, section_title=None):
     thumbnails = []
     lightboxes = []
     
-    for idx, photo in enumerate(photos, start=1):
+    for i, photo in enumerate(photos):
+        idx = start_index + i
         # Build image path
         img_path = f"{base_path}/{photo['webp_relative_path']}"
         
         # Use description as alt text, fallback to filename
         alt_text = photo.get('description', '') or photo['webp_filename'].replace('.webp', '')
         
+        # Get orientation for CSS class (landscape vs portrait cell height)
+        orientation = photo.get('orientation', 'landscape')
+        
         # Generate thumbnail
         thumbnails.append(THUMBNAIL_TEMPLATE.format(
             index=idx,
             image_path=img_path,
-            alt_text=alt_text
+            alt_text=alt_text,
+            orientation=orientation
         ))
         
         # Generate lightbox
@@ -205,11 +210,15 @@ def generate_gallery_html(metadata_file, output_file, title, breadcrumbs,
         # Single section, no title
         section_html = generate_gallery_section(metadata, base_path)
     else:
-        # Multiple sections
+        # Multiple sections — use a global index so lightbox IDs stay unique
         section_parts = []
+        current_index = 1
         for section_name, photos in sections.items():
             section_title = section_name if section_name else "Photos"
-            section_parts.append(generate_gallery_section(photos, base_path, section_title))
+            section_parts.append(generate_gallery_section(
+                photos, base_path, section_title, start_index=current_index
+            ))
+            current_index += len(photos)
         section_html = '\n'.join(section_parts)
     
     # Generate complete HTML
